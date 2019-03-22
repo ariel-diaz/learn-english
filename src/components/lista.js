@@ -27,11 +27,16 @@ import React, {useState, useEffect} from 'react'
 // }
 
 const Container = () => {
+
+    const initialPuntos = JSON.parse(localStorage.getItem('initialPuntos')) || 0;
+    const initialCorrectas = JSON.parse(localStorage.getItem('initialCorrectas')) || [];
+    const initialIncorrectas = JSON.parse(localStorage.getItem('initialIncorrectas')) || [];
+
     const [lista, setLista] = useState([]);
     const [actualWord, setActualWord] = useState({});
-    const [puntos, setPuntos] = useState(0); 
-    const [listaCorrectas, setListaCorrectas] = useState([]);
-    const [listaIncorrectas, setListaIncorrectas] = useState([]);
+    const [puntos, setPuntos] = useState(initialPuntos); 
+    const [listaCorrectas, setListaCorrectas] = useState(initialCorrectas);
+    const [listaIncorrectas, setListaIncorrectas] = useState(initialIncorrectas);
     const [inputResponse, setInputResponse] = useState('');
     const getWord = arr => arr[Math.floor(Math.random() * arr.length)]
     const getList = async () => {
@@ -43,6 +48,8 @@ const Container = () => {
             }
         });
         const data = await res.json();
+
+        console.log(data);
         setLista(data);
         setActualWord(getWord(data));
     }
@@ -52,13 +59,13 @@ const Container = () => {
         if(isCorrecta()) {
             setPuntos(puntos + 1);
             const clone = listaCorrectas.slice();
-            const newList = clone.concat(actualWord.spanish);
+            const newList = clone.concat(actualWord);
             setListaCorrectas(newList);
             setInputResponse('');
         } else {
             setPuntos(puntos - 1);
             const clone = listaIncorrectas.slice();
-            const newList = clone.concat(`${actualWord.spanish} -> ${actualWord.english}`);
+            const newList = clone.concat(actualWord);
             setListaIncorrectas(newList);
             setInputResponse('');
         }
@@ -72,9 +79,23 @@ const Container = () => {
         setInputResponse(e.target.value);
     }
 
+    const cleanIncorrectas = () => {
+        localStorage.setItem('initialIncorrectas', JSON.stringify([]));
+    }
+
     useEffect( () => {
         getList();
     },[])
+
+
+
+
+    useEffect( () => {
+        localStorage.setItem('initialPuntos', puntos);
+        localStorage.setItem('initialCorrectas', JSON.stringify(listaCorrectas));
+        localStorage.setItem('initialIncorrectas', JSON.stringify(listaIncorrectas));
+
+    });
 
     return (
         <div>
@@ -100,7 +121,7 @@ const Container = () => {
             <ol>
                 <h3>  CORRECTAS </h3> 
                 {listaCorrectas.length > 0 ?
-                listaCorrectas.map(x => <li> {x} </li>)
+                listaCorrectas.map((x, i) => <li key={i}> {x.english} </li>)
                 : "NO HAY CORRECTAS" }
             </ol>
 
@@ -109,8 +130,9 @@ const Container = () => {
             
             <ol>
                 <h3>  INCORRECTAS </h3> 
+                <button onClick={cleanIncorrectas()}> limpiar incorrectas </button>
                 {listaIncorrectas.length > 0 ?
-                listaIncorrectas.map(x => <li> {x} </li>)
+                listaIncorrectas.map((x, i) => <li key={i}> {x.spanish} </li>)
                 : "NO HAY CORRECTAS" }
             </ol>
         </div>
