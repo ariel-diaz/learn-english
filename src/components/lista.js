@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react'
 import styled from 'styled-components';
-
+import axios from 'axios';
 
 const ListContainer = styled.div`
     display:flex;
@@ -73,14 +73,15 @@ const Container = () => {
 
     const getWord = arr => arr[Math.floor(Math.random() * arr.length)]
     const getList = async () => {
-        const res = await fetch('https://english-pwa.firebaseio.com/lista.json',
+        const res = await axios.get('https://english-pwa.firebaseio.com/lista.json',
          {
-            method: 'GET',
             headers: {
                'Access-Control-Allow-Origin': '*',
             }
         });
-        const data = await res.json();
+
+        const data = res.data;
+
         const correctasMap = initialCorrectas.map(x => x.english.toLowerCase().trim());
         const newData =  data.filter( x => !correctasMap.includes(x.english.toLowerCase().trim()));
         
